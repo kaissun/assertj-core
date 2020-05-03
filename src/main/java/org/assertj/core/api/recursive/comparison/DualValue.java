@@ -212,4 +212,15 @@ final class DualValue {
     return fieldPath;
   }
 
+  public boolean hasPotentialCyclingValues() {
+    return isPotentialCyclingValue(actual) && isPotentialCyclingValue(expected);
+  }
+
+  private static boolean isPotentialCyclingValue(Object object) {
+    if (object == null) return false;
+    // java.lang are base types that can't cycle to themselves of other types
+    // we could check more type, but that's a good start
+    return !object.getClass().getCanonicalName().startsWith("java.lang");
+  }
+
 }

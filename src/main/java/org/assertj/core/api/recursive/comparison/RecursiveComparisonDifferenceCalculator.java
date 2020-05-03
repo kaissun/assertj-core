@@ -97,7 +97,11 @@ public class RecursiveComparisonDifferenceCalculator {
 
     public DualValue pickDualValueToCompare() {
       final DualValue dualValue = dualValuesToCompare.removeFirst();
-      visitedDualValues.add(dualValue);
+      if (dualValue.hasPotentialCyclingValues()) {
+        // visited dual values are here to avoid cycle, java types don't have cycle, there is no need to track them.
+        // moreover this would make should_fix_1854 to fail (see the test for a detailed explanation)
+        visitedDualValues.add(dualValue);
+      }
       return dualValue;
     }
 
@@ -144,7 +148,14 @@ public class RecursiveComparisonDifferenceCalculator {
       // - dualValuesToCompare = {a'}
       // dualValuesToCompare.removeAll(visitedDualValues) would remove it which is incorrect
       // If we compare references then a' won't be removed from dualValuesToCompare
-      visitedDualValues.forEach(visited -> dualValuesToCompare.removeIf(toCompare -> toCompare == visited));
+      visitedDualValues.forEach(visited -> {
+        // remove visited values one by one, thus not using removeIf which would remove all matching values with:
+        // dualValuesToCompare.removeIf(toCompare -> toCompare == visited)
+        dualValuesToCompare.stream()
+                           .filter(toCompare -> toCompare.equals(visited))
+                           .findFirst()
+                           .ifPresent(dualValuesToCompare::remove);
+      });
     }
 
     private boolean mustCompareFieldsRecursively(boolean isRootObject, DualValue dualValue) {

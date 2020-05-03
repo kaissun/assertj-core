@@ -295,4 +295,23 @@ public class RecursiveComparisonAssert_isEqualTo_ignoringCollectionOrder_Test
                                   .isEqualTo(list(listCReverse, listAReverse));
   }
 
+  @Test
+  public void should_fix_1854_minimal_test() {
+    // Original Lists
+    List<Integer> listA = list(1, 2);
+    List<Integer> listB = list(1, 2);
+
+    // --------------------------------------------------------------------------------------------------------------
+    // Reversed test case - compare against reversed copies of the original lists
+    List<Integer> listAReverse = list(2, 1);
+    List<Integer> listBReverse = list(2, 1);
+
+    // <<<<<<<<<<<<<<<<<<<<<<<< HERE IS THE PROBLEM >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // Comparing the original lists against two reversed lists fails!
+    assertThat(list(listA, listB)).usingRecursiveComparison()
+                                  .ignoringCollectionOrder()
+                                  .isEqualTo(list(listBReverse, listAReverse));
+
+  }
+
 }
